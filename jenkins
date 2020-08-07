@@ -1,0 +1,20 @@
+
+pipeline {
+	agent any
+	stages {
+		stage("Build") {
+			tools {
+  				dockerTool 'docker'
+			}
+			steps {
+				sh 'pip install -r hello-world-webapp/requirements.txt'
+				image = docker.build 'hub.docker.com/ghost1412' + ":latest"
+				docker.withRegistry( '', docherhub_id ) {
+            		image.push()
+          		}
+				def response = httpRequest url: "https://api.flock.com/hooks/sendMessage/a879bde1-0b78-4057-97a3-7d95d684a155", customHeaders: "hello-world-webapp success"
+
+			}
+		}
+	}
+}
