@@ -1,24 +1,24 @@
 pipeline {
 	agent any
 	tools{
-        jdk 'openjdk-8'
-        maven 'maven-3'
-        dockerTool 'docker'
-    }
+		jdk 'openjdk-8'
+		maven 'maven-3'
+		dockerTool 'docker'
+    	}
 	stages {
-	    stage('Build'){
-	        steps{
-	            git 'https://github.com/ghost1412/hello-world-webapp.git'
-	        }
-	    }
+		stage('Build'){
+			steps{
+			    git 'https://github.com/ghost1412/hello-world-webapp.git'
+			}
+		}
 
 		stage("Deploy") {
 			steps {
 				script{
-    				withDockerRegistry( toolName: 'docker', credentialsId:'dockerhub_id') {
-    				    image = docker.build('ghost1412/hello-world-webapp:latest')
-                		//image.push()
-              		}
+					withDockerRegistry( toolName: 'docker', credentialsId:'dockerhub_id') {
+					    image = docker.build('ghost1412/hello-world-webapp:latest')
+					    image.push()
+					}
 				}
 			}
 		}
@@ -26,23 +26,21 @@ pipeline {
 	}
 
         post {
-        success {
-            echo "success"
-            
-            script{
-                shortCommit = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
-                def reqBody = '{"text":"Project Name: hello-world-webapp\nBuild Commit: '+shortCommit+'\nBuild Status: s!!"}'
-                httpRequest contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody:reqBody , responseHandle: 'NONE', url: url, wrapAsMultipart: false
-            }
-            
-        }
-        failure {
-            echo "fail"
-            script{
-                shortCommit = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
-                def reqBody = '{"text":"Project Name: hello-world-webapp\nBuild Commit: '+shortCommit+'\nBuild Status: f!!"}'
-                httpRequest contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody:reqBody , responseHandle: 'NONE', url: url, wrapAsMultipart: false
-            }
-        }
-    }
+		success {
+		    echo "success"
+		    script{
+			shortCommit = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
+			def reqBody = '{"text":"Project Name: hello-world-webapp\nBuild Commit: '+shortCommit+'\nBuild Status: s!!"}'
+			httpRequest contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody:reqBody , responseHandle: 'NONE', url: url, wrapAsMultipart: false
+		    }
+		}
+		failure {
+		    echo "fail"
+		    script{
+			shortCommit = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
+			def reqBody = '{"text":"Project Name: hello-world-webapp\nBuild Commit: '+shortCommit+'\nBuild Status: f!!"}'
+			httpRequest contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody:reqBody , responseHandle: 'NONE', url: url, wrapAsMultipart: false
+		    }
+		}
+    	}
 }
