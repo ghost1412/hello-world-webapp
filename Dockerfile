@@ -1,14 +1,9 @@
-FROM python:3-7
-
-RUN pip install --upgrade pip
-
-ADD requirements.txt /app/
-
-RUN pip install -r /app/requirements.txt
-
-ADD . /app
+FROM python
 WORKDIR /app
+ADD . /app
 
-EXPOSE 8000
+COPY . /app
 
-CMD ["gunicorn" "app:app"]
+RUN pip install -r requirements.txt
+
+CMD gunicorn app:app
